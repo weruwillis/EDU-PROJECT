@@ -1,0 +1,3094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SchoolVote</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --ink: #0f1117;
+  --paper: #f7f4ef;
+  --cream: #ede9e1;
+  --gold: #c9a84c;
+  --gold-light: #f0d98a;
+  --forest: #1e4035;
+  --forest-mid: #64696917;
+  --forest-pale: #d4e8e1;
+  --red: #c0392b;
+  --muted: #6b7280;
+  --border: #d5cfc4;
+  --white: #ffffff;
+  --shadow: 0 2px 12px rgba(15,17,23,.08);
+  --shadow-lg: 0 8px 32px rgba(15,17,23,.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100%;
+}
+
+/* ── SCREEN SYSTEM ── */
+.screen { display: none; }
+.screen.active { display: flex; }
+
+/* ── LANDING ── */
+#screen-landing {
+  min-height: 100vh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+}
+#screen-landing::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(201,168,76,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(45,96,80,.6) 0%, transparent 60%);
+}
+.landing-inner {
+  position: relative;
+  text-align: center;
+  max-width: 520px;
+  padding: 2rem;
+  animation: fadeUp .6s ease both;
+}
+.landing-badge {
+  display: inline-block;
+  background: rgba(201,168,76,.2);
+  border: 1px solid rgba(201,168,76,.4);
+  color: var(--gold-light);
+  font-size: .72rem;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: .35rem 1rem;
+  border-radius: 2rem;
+  margin-bottom: 1.5rem;
+}
+.landing-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 3.6rem;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: .5rem;
+}
+.landing-logo span { color: var(--gold); }
+.landing-tagline {
+  color: rgba(255,255,255,.55);
+  font-size: .95rem;
+  font-weight: 300;
+  margin-bottom: 3rem;
+  letter-spacing: .02em;
+}
+.landing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+.login-card {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 16px;
+  padding: 2rem 1.5rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all .25s;
+  backdrop-filter: blur(8px);
+}
+.login-card:hover {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.2);
+  transform: translateY(-2px);
+}
+.login-card-icon {
+  font-size: 2.4rem;
+  margin-bottom: .75rem;
+}
+.login-card-title {
+  color: var(--white);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: .3rem;
+}
+.login-card-desc {
+  color: rgba(255,255,255,.5);
+  font-size: .82rem;
+  line-height: 1.5;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── LOGIN SCREEN ── */
+#screen-login {
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: var(--forest);
+  position: relative;
+  overflow: hidden;
+}
+#screen-login::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(201,168,76,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 60% at 10% 80%, rgba(45,96,80,.6) 0%, transparent 60%);
+}
+.login-box {
+  position: relative;
+  background: var(--white);
+  border-radius: 24px;
+  padding: 2.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp .5s ease both;
+}
+.login-back {
+  background: none;
+  border: none;
+  color: var(--forest);
+  font-size: .88rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-weight: 500;
+  transition: gap .2s;
+}
+.login-back:hover { gap: .2rem; }
+.login-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: .5rem;
+  color: var(--forest);
+}
+.login-subtitle {
+  color: var(--muted);
+  font-size: .88rem;
+  margin-bottom: 2rem;
+}
+.field {
+  margin-bottom: 1.2rem;
+}
+.field label {
+  display: block;
+  font-size: .85rem;
+  font-weight: 500;
+  margin-bottom: .4rem;
+  color: var(--ink);
+}
+.field input {
+  width: 100%;
+  padding: .75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .95rem;
+  background: var(--white);
+  transition: all .2s;
+  font-family: inherit;
+}
+.field input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-pale);
+}
+.btn-primary {
+  width: 100%;
+  padding: .9rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  font-family: inherit;
+}
+.btn-primary:hover { background: var(--forest-mid); }
+.btn-primary:disabled { background: var(--muted); cursor: not-allowed; }
+
+/* ── STUDENT VOTING SCREEN ── */
+#screen-vote {
+  flex-direction: column;
+}
+.vote-header {
+  background: var(--forest);
+  color: var(--white);
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+}
+.vote-header-left { display: flex; align-items: center; gap: 1rem; }
+.vote-header-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
+}
+.vote-header-logo span { color: var(--gold); }
+.vote-header-user {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+.vote-header-name { font-weight: 600; font-size: .95rem; }
+.vote-header-class { font-size: .78rem; opacity: .7; }
+.vote-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.progress-indicator {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  font-size: .82rem;
+}
+.progress-bar-mini {
+  width: 80px;
+  height: 6px;
+  background: rgba(255,255,255,.2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill-mini {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 3px;
+  transition: width .3s;
+}
+.btn-logout {
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.2);
+  color: var(--white);
+  padding: .5rem 1rem;
+  border-radius: 8px;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-logout:hover {
+  background: rgba(255,255,255,.15);
+}
+
+.vote-content {
+  flex: 1;
+  padding: 2.5rem;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+}
+.vote-title {
+  font-size: 1.8rem;
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+.vote-subtitle {
+  color: var(--muted);
+  font-size: .95rem;
+  margin-bottom: 2.5rem;
+}
+.positions-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+.position-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: var(--shadow);
+  transition: box-shadow .2s;
+}
+.position-card:hover { box-shadow: var(--shadow-lg); }
+.position-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.2rem;
+}
+.position-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+.vote-status {
+  padding: .35rem .75rem;
+  border-radius: 1rem;
+  font-size: .75rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.vote-status.voted {
+  background: var(--forest-pale);
+  color: var(--forest);
+}
+.vote-status.pending {
+  background: var(--cream);
+  color: var(--muted);
+}
+.candidates-list {
+  display: grid;
+  gap: .75rem;
+}
+.candidate-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  background: var(--cream);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all .2s;
+}
+.candidate-item:hover {
+  background: var(--white);
+  border-color: var(--forest-pale);
+}
+.candidate-item.selected {
+  background: var(--forest-pale);
+  border-color: var(--forest);
+}
+.candidate-info {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.candidate-name {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.candidate-class {
+  color: var(--muted);
+  font-size: .82rem;
+}
+.radio-circle {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  position: relative;
+  transition: all .2s;
+}
+.candidate-item.selected .radio-circle {
+  border-color: var(--forest);
+  background: var(--forest);
+}
+.candidate-item.selected .radio-circle::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+  font-size: .7rem;
+  font-weight: bold;
+}
+.vote-actions {
+  margin-top: 1.2rem;
+  display: flex;
+  gap: .75rem;
+}
+.btn-vote {
+  flex: 1;
+  padding: .75rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.btn-vote:hover { background: var(--forest-mid); }
+.btn-vote:disabled { background: var(--muted); cursor: not-allowed; opacity: .5; }
+.btn-vote-clear {
+  padding: .75rem 1.2rem;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: .9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  color: var(--ink);
+  font-family: inherit;
+}
+.btn-vote-clear:hover {
+  background: var(--cream);
+  border-color: var(--muted);
+}
+
+/* ── ADMIN DASHBOARD ── */
+#screen-admin {
+  flex-direction: column;
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+.admin-header {
+  background: var(--forest);
+  color: var(--white);
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow);
+  flex-shrink: 0;
+}
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.admin-logo {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+}
+.admin-logo span { color: var(--gold); }
+.admin-user {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+.admin-label {
+  font-size: .72rem;
+  opacity: .6;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.admin-name {
+  font-weight: 600;
+  font-size: .95rem;
+}
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.sidebar {
+  width: 240px;
+  background: var(--white);
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  flex-shrink: 0;
+  overflow-y: auto;
+}
+.nav-list {
+  list-style: none;
+}
+.nav-item {
+  padding: .75rem 1.5rem;
+  cursor: pointer;
+  font-size: .92rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  border-left: 3px solid transparent;
+}
+.nav-item:hover {
+  background: var(--cream);
+  color: var(--ink);
+}
+.nav-item.active {
+  background: var(--forest-pale);
+  color: var(--forest);
+  border-left-color: var(--forest);
+  font-weight: 600;
+}
+.ni {
+  font-size: 1.2rem;
+  width: 1.5rem;
+  text-align: center;
+}
+
+.main-panel {
+  flex: 1;
+  padding: 2.5rem;
+  overflow-y: auto;
+  background: var(--paper);
+  min-height: 0;
+}
+.tab-panel {
+  display: none;
+  animation: fadeIn .3s ease;
+}
+.tab-panel.active { display: block; }
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .5; transform: scale(1.3); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.page-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: .5rem;
+  color: var(--forest);
+}
+.page-sub {
+  color: var(--muted);
+  font-size: .95rem;
+  margin-bottom: 2rem;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.stat-icon {
+  font-size: 2rem;
+  margin-bottom: .75rem;
+}
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 600;
+  color: var(--forest);
+  margin-bottom: .25rem;
+}
+.label {
+  color: var(--muted);
+  font-size: .85rem;
+  font-weight: 500;
+}
+
+.results-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.result-block {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: var(--shadow);
+}
+.result-title {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  color: var(--forest);
+}
+.result-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.result-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.result-name {
+  min-width: 180px;
+  font-weight: 500;
+  font-size: .95rem;
+}
+.result-name.leading {
+  color: var(--forest);
+  font-weight: 600;
+}
+.result-bar-wrap {
+  flex: 1;
+  height: 32px;
+  background: var(--cream);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+}
+.result-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--forest-mid), var(--forest));
+  border-radius: 8px;
+  transition: width .4s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: .75rem;
+  color: var(--white);
+  font-size: .82rem;
+  font-weight: 600;
+  min-width: 50px;
+}
+.result-bar.leading {
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+}
+.result-count {
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--ink);
+  min-width: 50px;
+  text-align: right;
+}
+
+.turnout-list {
+  display: grid;
+  gap: 1rem;
+}
+.turnout-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.2rem;
+  background: var(--cream);
+  border-radius: 12px;
+}
+.turnout-class {
+  font-weight: 600;
+  font-size: .95rem;
+}
+.turnout-stats {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.turnout-pct {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--forest);
+}
+.turnout-detail {
+  font-size: .82rem;
+  color: var(--muted);
+}
+
+.settings-group {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.settings-group h3 {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+  color: var(--forest);
+}
+.toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0;
+}
+.toggle-label {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+}
+.toggle-label small {
+  color: var(--muted);
+  font-size: .82rem;
+}
+.toggle {
+  width: 50px;
+  height: 28px;
+  background: var(--muted);
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  transition: background .3s;
+  border: none;
+  padding: 0;
+}
+.toggle.on { background: var(--forest); }
+.toggle::after {
+  content: '';
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  background: var(--white);
+  border-radius: 50%;
+  top: 3px;
+  left: 3px;
+  transition: left .3s;
+  box-shadow: 0 2px 4px rgba(0,0,0,.1);
+}
+.toggle.on::after { left: 25px; }
+.btn-export {
+  padding: .9rem 1.5rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  border-radius: 10px;
+  font-size: .95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  font-family: inherit;
+  margin-top: 1rem;
+}
+.btn-export:hover { background: var(--forest-mid); }
+
+.mgmt-position-block {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.8rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+.mgmt-position-block h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  color: var(--forest);
+}
+.candidate-list {
+  list-style: none;
+  margin-bottom: 1rem;
+}
+.candidate-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1rem;
+  background: var(--cream);
+  border-radius: 10px;
+  margin-bottom: .5rem;
+  font-size: .92rem;
+}
+.del-btn {
+  background: var(--red);
+  color: var(--white);
+  border: none;
+  padding: .4rem .85rem;
+  border-radius: 6px;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: opacity .2s;
+  font-family: inherit;
+  font-weight: 500;
+}
+.del-btn:hover { opacity: .8; }
+.btn-danger-bulk {
+  background: var(--red);
+  color: var(--white);
+  border: none;
+  padding: .85rem 1.5rem;
+  border-radius: 10px;
+  font-size: .95rem;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+  font-weight: 600;
+}
+.btn-danger-bulk:hover { 
+  opacity: .85;
+  transform: translateY(-1px);
+}
+.add-candidate-form {
+  display: flex;
+  gap: .75rem;
+  margin-top: 1rem;
+}
+.add-candidate-form input {
+  flex: 1;
+  padding: .75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: .9rem;
+  font-family: inherit;
+}
+.add-candidate-form input:focus {
+  outline: none;
+  border-color: var(--forest);
+}
+.btn-add {
+  padding: .75rem 1.2rem;
+  background: var(--forest);
+  color: var(--white);
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .2s;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.btn-add:hover { background: var(--forest-mid); }
+
+.search-input {
+  width: 100%;
+  padding: .85rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: .95rem;
+  margin-bottom: 1.5rem;
+  font-family: inherit;
+  background: var(--white);
+}
+.search-input:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px var(--forest-pale);
+}
+
+.student-add-form {
+  background: var(--cream);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+.student-add-form.show { display: block; }
+.form-row {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: .75rem;
+  flex-wrap: wrap;
+}
+
+.csv-drop-zone, .excel-drop-zone {
+  background: var(--white);
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all .3s;
+  cursor: pointer;
+}
+.csv-drop-zone:hover, .excel-drop-zone:hover,
+.csv-drop-zone.drag-over, .excel-drop-zone.drag-over {
+  border-color: var(--forest);
+  background: var(--forest-pale);
+}
+.csv-drop-zone h3, .excel-drop-zone h3 {
+  margin-bottom: .75rem;
+}
+.csv-drop-zone code, .excel-drop-zone code {
+  background: var(--cream);
+  padding: .2rem .5rem;
+  border-radius: 4px;
+  font-size: .85rem;
+  font-family: 'Courier New', monospace;
+}
+
+.csv-preview-tbl, .excel-preview-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .88rem;
+  background: var(--white);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.csv-preview-tbl th, .csv-preview-tbl td,
+.excel-preview-tbl th, .excel-preview-tbl td {
+  padding: .65rem .85rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+.csv-preview-tbl th, .excel-preview-tbl th {
+  background: var(--cream);
+  font-weight: 600;
+  color: var(--forest);
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .9rem;
+}
+.students-table th {
+  background: var(--cream);
+  padding: .85rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--forest);
+  border-bottom: 2px solid var(--border);
+}
+.students-table td {
+  padding: .85rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.students-table tr:hover {
+  background: var(--cream);
+}
+.badge {
+  display: inline-block;
+  padding: .3rem .65rem;
+  border-radius: 1rem;
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+.badge.voted {
+  background: var(--forest-pale);
+  color: var(--forest);
+}
+.badge.pending {
+  background: var(--cream);
+  color: var(--muted);
+}
+.badge.active-status {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge.inactive-status {
+  background: rgba(192,57,43,.12);
+  color: var(--red);
+}
+.action-btns {
+  display: flex;
+  gap: .5rem;
+}
+.btn-sm {
+  padding: .4rem .75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: .8rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+  transition: opacity .2s;
+}
+.btn-sm:hover { opacity: .8; }
+.btn-reset {
+  background: var(--gold);
+  color: var(--white);
+}
+.btn-delete {
+  background: var(--red);
+  color: var(--white);
+}
+.btn-activate {
+  background: #059669;
+  color: var(--white);
+}
+.btn-deactivate {
+  background: #d97706;
+  color: var(--white);
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: var(--forest);
+  color: var(--white);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  font-size: .92rem;
+  font-weight: 500;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all .3s;
+  pointer-events: none;
+  z-index: 9999;
+  max-width: 400px;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.toast.error {
+  background: var(--red);
+}
+.toast.success {
+  background: var(--forest);
+}
+
+/* ── CONFIRM MODAL ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,17,23,.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+}
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+.modal-box {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 24px 64px rgba(15,17,23,.22);
+  transform: translateY(16px) scale(.97);
+  transition: transform .25s ease, opacity .25s;
+  opacity: 0;
+  margin: 1rem;
+}
+.modal-overlay.show .modal-box {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.modal-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  margin-bottom: 1.25rem;
+}
+.modal-icon.danger  { background: rgba(192,57,43,.12); }
+.modal-icon.warning { background: rgba(201,168,76,.15); }
+.modal-icon.info    { background: var(--forest-pale); }
+.modal-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: .5rem;
+}
+.modal-message {
+  font-size: .92rem;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+.modal-actions {
+  display: flex;
+  gap: .75rem;
+  justify-content: flex-end;
+}
+.modal-btn {
+  padding: .7rem 1.4rem;
+  border: none;
+  border-radius: 10px;
+  font-size: .92rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .18s;
+}
+.modal-btn.cancel {
+  background: var(--cream);
+  color: var(--ink);
+  border: 1px solid var(--border);
+}
+.modal-btn.cancel:hover { background: var(--border); }
+.modal-btn.confirm-danger {
+  background: var(--red);
+  color: var(--white);
+}
+.modal-btn.confirm-danger:hover { opacity: .88; }
+.modal-btn.confirm-warning {
+  background: var(--gold);
+  color: var(--white);
+}
+.modal-btn.confirm-warning:hover { opacity: .88; }
+.modal-btn.confirm-primary {
+  background: var(--forest);
+  color: var(--white);
+}
+.modal-btn.confirm-primary:hover { background: var(--forest-mid); }
+
+/* Tab styles for import options */
+.import-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid var(--border);
+}
+.import-tab {
+  padding: 0.75rem 1.5rem;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--muted);
+  transition: all 0.2s;
+  font-family: inherit;
+}
+.import-tab:hover {
+  color: var(--ink);
+}
+.import-tab.active {
+  color: var(--forest);
+  border-bottom-color: var(--forest);
+  font-weight: 600;
+}
+.import-content {
+  display: none;
+}
+.import-content.active {
+  display: block;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LANDING SCREEN ════════════════════════════════ -->
+<div class="screen active" id="screen-landing">
+  <div class="landing-inner">
+    <div class="landing-badge">Secure • Transparent • Fair</div>
+    <h1 class="landing-logo">Edu<span>Vote</span></h1>
+    <p class="landing-tagline">Modern election system for Edus</p>
+    <div class="landing-cards">
+      <div class="login-card" onclick="showLogin('student')">
+        <div class="login-card-icon">🎓</div>
+        <div class="login-card-title">Student Login</div>
+        <div class="login-card-desc">Vote for your student council representatives</div>
+      </div>
+      <div class="login-card" onclick="showLogin('admin')">
+        <div class="login-card-icon">🔐</div>
+        <div class="login-card-title">Admin Login</div>
+        <div class="login-card-desc">Manage elections and view results</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOGIN SCREEN ══════════════════════════════════ -->
+<div class="screen" id="screen-login">
+  <div class="login-box">
+    <button class="login-back" onclick="backToLanding()">← Back</button>
+    <h2 class="login-title" id="login-title">Student Login</h2>
+    <p class="login-subtitle" id="login-subtitle">Enter your credentials to vote</p>
+    <form id="login-form" onsubmit="handleLogin(event)">
+      <div class="field" id="field-admission">
+        <label>Admission Number</label>
+        <input type="text" id="login-admission" required>
+      </div>
+      <div class="field" id="field-username" style="display:none;">
+        <label>Username</label>
+        <input type="text" id="login-username">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="login-password" required>
+      </div>
+      <button type="submit" class="btn-primary" id="login-btn">Login</button>
+    </form>
+  </div>
+</div>
+
+<!-- ══ STUDENT VOTING SCREEN ═════════════════════════ -->
+<div class="screen" id="screen-vote">
+  <div class="vote-header">
+    <div class="vote-header-left">
+      <h1 class="vote-header-logo">Edu<span>Vote</span></h1>
+      <div class="vote-header-user">
+        <div class="vote-header-name" id="vote-user-name"></div>
+        <div class="vote-header-class" id="vote-user-class"></div>
+      </div>
+    </div>
+    <div class="vote-header-right">
+      <div class="progress-indicator">
+        <div class="progress-bar-mini">
+          <div class="progress-fill-mini" id="progress-fill"></div>
+        </div>
+        <span id="progress-text">0/0</span>
+      </div>
+      <button class="btn-logout" onclick="logout()">Logout</button>
+    </div>
+  </div>
+  <div class="vote-content">
+    <h2 class="vote-title">Cast Your Vote</h2>
+    <p class="vote-subtitle">Select one candidate per position. You can only vote once per position.</p>
+    <div class="positions-grid" id="positions-container"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN DASHBOARD ═══════════════════════════════ -->
+<div class="screen" id="screen-admin">
+  <div class="admin-header">
+    <div class="admin-header-left">
+      <h1 class="admin-logo">Edu<span>Vote</span></h1>
+      <div class="admin-user">
+        <div class="admin-label">Admin Dashboard</div>
+        <div class="admin-name" id="admin-name"></div>
+      </div>
+    </div>
+    <button class="btn-logout" onclick="logout()">Logout</button>
+  </div>
+  <div class="admin-body">
+    <nav class="sidebar">
+      <ul class="nav-list">
+        <li class="nav-item active" onclick="switchTab('results')">
+          <span class="ni">📊</span> RESULTS
+        </li>
+        <li class="nav-item" onclick="switchTab('turnout')">
+          <span class="ni">📈</span> TURNOUT
+        </li>
+        <li class="nav-item" onclick="switchTab('candidates')">
+          <span class="ni">🎓</span> CANDIDATES
+        </li>
+        <li class="nav-item" onclick="switchTab('students')">
+          <span class="ni">👥</span> STUDENTS
+        </li>
+        <li class="nav-item" onclick="switchTab('settings')">
+          <span class="ni">⚙️</span> <b>SETTINGS</b>
+        </li>
+      </ul>
+    </nav>
+    <div class="main-panel">
+      <!-- Results -->
+      <div class="tab-panel active" id="tab-results">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;">
+          <div class="page-title" style="margin-bottom:0;">LIVE RESULTS</div>
+          <div style="display:flex;align-items:center;gap:.75rem;">
+            <span id="live-badge" style="display:flex;align-items:center;gap:.4rem;background:rgba(30,64,53,.1);border:1px solid rgba(30,64,53,.2);color:var(--forest);font-size:.78rem;font-weight:600;padding:.3rem .75rem;border-radius:2rem;">
+              <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 1.4s infinite;"></span>LIVE
+            </span>
+            <span id="results-last-updated" style="font-size:.78rem;color:var(--muted);"></span>
+          </div>
+        </div>
+        <div class="page-sub">Real-time vote counts · refreshes every 3 seconds</div>
+        <div class="results-section" id="results-container"></div>
+      </div>
+
+      <!-- Turnout -->
+      <div class="tab-panel" id="tab-turnout">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;">
+          <div class="page-title" style="margin-bottom:0;">VOTER TURNOUT</div>
+          <span id="turnout-last-updated" style="font-size:.78rem;color:var(--muted);"></span>
+        </div>
+        <div class="page-sub">Track participation across all classes · refreshes every 3 seconds</div>
+        <div class="stats-grid" id="turnout-stats"></div>
+        <div class="settings-group">
+          <h3>Turnout by Class</h3>
+          <div class="turnout-list" id="turnout-by-class"></div>
+        </div>
+      </div>
+
+      <!-- Candidates -->
+      <div class="tab-panel" id="tab-candidates">
+        <div class="page-title">CANDIDATES MANAGEMENT</div>
+        <div class="page-sub">Define positions for this election, then add candidates to each</div>
+
+        <!-- Positions Management -->
+        <div class="settings-group">
+          <h3>🗳️ Election Positions</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem;">
+            Create the positions students will vote for (e.g. President, Treasurer, Games Captain). 
+            Deleting a position also removes all its votes.
+          </p>
+          <div class="add-candidate-form" style="margin-bottom:1rem;">
+            <input type="text" id="new-position-name" placeholder="e.g. School Captain" style="flex:2;">
+            <button class="btn-add" onclick="addPosition()">+ Add Position</button>
+          </div>
+          <ul class="candidate-list" id="positions-list">
+            <li style="color:var(--muted);font-style:italic;justify-content:center;">Loading…</li>
+          </ul>
+        </div>
+        
+        <!-- Excel Import Section -->
+        <div class="settings-group">
+          <h3>📥 Bulk Import Candidates</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+            Import multiple candidates at once using Excel (.xlsx, .xls) or CSV files. 
+            Required columns: <code>position</code>, <code>name</code>, <code>class</code>
+          </p>
+          
+          <div class="import-tabs">
+            <button class="import-tab active" onclick="switchImportTab('candidates', 'excel')">Excel Import</button>
+            <button class="import-tab" onclick="switchImportTab('candidates', 'csv')">CSV Import</button>
+          </div>
+          
+          <!-- Excel Import -->
+          <div class="import-content active" id="candidates-excel-import">
+            <div class="excel-drop-zone" id="candidates-excel-drop-zone"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="handleCandidatesExcelDrop(event)">
+              <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem;">
+                Drag & drop an Excel file here, or click to select
+              </p>
+              <input type="file" id="candidates-excel-input" accept=".xlsx,.xls" style="display:none" onchange="handleCandidatesExcelFile(this.files[0])">
+              <button class="btn-add" onclick="document.getElementById('candidates-excel-input').click()">📂 Choose Excel File</button>
+              <div id="candidates-excel-preview" style="margin-top:1rem;display:none;">
+                <div id="candidates-excel-preview-info" style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;"></div>
+                <div id="candidates-excel-preview-table"></div>
+                <div style="display:flex;gap:.75rem;margin-top:1rem;">
+                  <button class="btn-add" onclick="importExcelCandidates()">⬆️ Import All</button>
+                  <button class="btn-add" style="background:var(--muted);" onclick="clearCandidatesExcelPreview()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- CSV Import -->
+          <div class="import-content" id="candidates-csv-import">
+            <div class="csv-drop-zone" id="candidates-csv-drop-zone"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="handleCandidatesCsvDrop(event)">
+              <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem;">
+                Drag & drop a CSV file here, or click to select
+              </p>
+              <input type="file" id="candidates-csv-input" accept=".csv" style="display:none" onchange="handleCandidatesCsvFile(this.files[0])">
+              <button class="btn-add" onclick="document.getElementById('candidates-csv-input').click()">📂 Choose CSV File</button>
+              <div id="candidates-csv-preview" style="margin-top:1rem;display:none;">
+                <div id="candidates-csv-preview-info" style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;"></div>
+                <div id="candidates-csv-preview-table"></div>
+                <div style="display:flex;gap:.75rem;margin-top:1rem;">
+                  <button class="btn-add" onclick="importCsvCandidates()">⬆️ Import All</button>
+                  <button class="btn-add" style="background:var(--muted);" onclick="clearCandidatesCsvPreview()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Bulk Actions -->
+        <div class="settings-group">
+          <h3>⚠️ Bulk Actions</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+            Permanently delete all candidates from all positions. This action cannot be undone.
+          </p>
+          <button class="btn-danger-bulk" onclick="confirmBulkDeleteCandidates()">🗑️ Delete All Candidates</button>
+        </div>
+        
+        <div id="candidates-mgmt"></div>
+      </div>
+      
+      <!-- Students -->
+      <div class="tab-panel" id="tab-students">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem;">
+          <div class="page-title" style="margin-bottom:0;">STUDENTS</div>
+          <span id="students-last-updated" style="font-size:.78rem;color:var(--muted);"></span>
+        </div>
+        <div class="page-sub">Manage registered students · voted status refreshes every 3 seconds</div>
+        <div class="stats-grid" id="student-stats">
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-value" id="stat-total-students">0</div>
+            <div class="label">Total Students</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">✅</div>
+            <div class="stat-value" id="stat-voted-students">0</div>
+            <div class="label">Students Voted</div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Add New Student</h3>
+          <button class="btn-add" onclick="toggleAddStudentForm()">+ Add Student</button>
+          <div class="student-add-form" id="student-add-form">
+            <div class="form-row">
+              <div class="field" style="flex:1;min-width:150px;">
+                <label>Admission Number</label>
+                <input type="text" id="ns-admission" placeholder="e.g. S007" required>
+              </div>
+              <div class="field" style="flex:2;min-width:200px;">
+                <label>Full Name</label>
+                <input type="text" id="ns-name" placeholder="e.g. John Doe" required>
+              </div>
+              <div class="field" style="flex:1;min-width:130px;">
+                <label>Class</label>
+                <input type="text" id="ns-class" placeholder="e.g. Form 4A" required>
+              </div>
+              <div class="field" style="flex:1;min-width:130px;">
+                <label>Password</label>
+                <input type="text" id="ns-pw" placeholder="Default: 1234">
+              </div>
+            </div>
+            <div style="display:flex;gap:.75rem;margin-top:.5rem;">
+              <button class="btn-add" onclick="addStudent()">Save Student</button>
+              <button class="btn-add" style="background:var(--muted);" onclick="hideAddStudentForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bulk Import Section -->
+        <div class="settings-group">
+          <h3>📥 Bulk Import Students</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+            Import multiple students at once using Excel (.xlsx, .xls) or CSV files. 
+            Required columns: <code>admission</code>, <code>name</code>, <code>class</code>. Optional: <code>password</code>
+          </p>
+          
+          <div class="import-tabs">
+            <button class="import-tab active" onclick="switchImportTab('students', 'excel')">Excel Import</button>
+            <button class="import-tab" onclick="switchImportTab('students', 'csv')">CSV Import</button>
+          </div>
+          
+          <!-- Excel Import -->
+          <div class="import-content active" id="students-excel-import">
+            <div class="excel-drop-zone" id="excel-drop-zone"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="handleExcelDrop(event)">
+              <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem;">
+                Drag & drop an Excel file here, or click to select
+              </p>
+              <input type="file" id="excel-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleExcelFile(this.files[0])">
+              <button class="btn-add" onclick="document.getElementById('excel-file-input').click()">📂 Choose Excel File</button>
+              <div id="excel-preview" style="margin-top:1rem;display:none;">
+                <div id="excel-preview-info" style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;"></div>
+                <div id="excel-preview-table"></div>
+                <div style="display:flex;gap:.75rem;margin-top:1rem;">
+                  <button class="btn-add" onclick="importExcelStudents()">⬆️ Import All</button>
+                  <button class="btn-add" style="background:var(--muted);" onclick="clearExcelPreview()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- CSV Import -->
+          <div class="import-content" id="students-csv-import">
+            <div class="csv-drop-zone" id="csv-drop-zone"
+                 ondragover="event.preventDefault();this.classList.add('drag-over')"
+                 ondragleave="this.classList.remove('drag-over')"
+                 ondrop="handleCsvDrop(event)">
+              <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem;">
+                Drag & drop a CSV file here, or click to select
+              </p>
+              <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="handleCsvFile(this.files[0])">
+              <button class="btn-add" onclick="document.getElementById('csv-file-input').click()">📂 Choose CSV File</button>
+              <div id="csv-preview" style="margin-top:1rem;display:none;">
+                <div id="csv-preview-info" style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;"></div>
+                <div id="csv-preview-table"></div>
+                <div style="display:flex;gap:.75rem;margin-top:1rem;">
+                  <button class="btn-add" onclick="importCsvStudents()">⬆️ Import All</button>
+                  <button class="btn-add" style="background:var(--muted);" onclick="clearCsvPreview()">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-group">
+          <h3>Search Students</h3>
+          <input type="text" id="student-search" placeholder="🔍 Search by name, admission, class…" oninput="searchStudents()" class="search-input">
+        </div>
+
+        <!-- Bulk Actions -->
+        <div class="settings-group">
+          <h3>⚠️ Bulk Actions</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+            Permanently delete all students and their votes. This action cannot be undone.
+          </p>
+          <button class="btn-danger-bulk" onclick="confirmBulkDeleteStudents()">🗑️ Delete All Students</button>
+        </div>
+
+        <!-- Students Table -->
+        <div class="settings-group" style="padding:0;overflow:hidden;">
+          <div id="students-table-wrap">
+            <div style="padding:2rem;text-align:center;color:var(--muted);">Loading students…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="tab-panel" id="tab-settings">
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Election controls, school identity, and account security</div>
+
+        <!-- Election Control -->
+        <div class="settings-group">
+          <h3>Election Control</h3>
+          <div class="toggle-row">
+            <div class="toggle-label">
+              Voting Open
+              <small>Allow students to cast votes</small>
+            </div>
+            <button class="toggle" id="voting-toggle" onclick="toggleVoting()"></button>
+          </div>
+        </div>
+
+        <!-- School Identity -->
+        <div class="settings-group">
+          <h3>🏫 School Identity</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem;">This information appears on exports and the voting interface.</p>
+          <div class="form-row">
+            <div class="field" style="flex:2;min-width:220px;">
+              <label>School Name</label>
+              <input type="text" id="set-school-name" placeholder="e.g. Greenfield Secondary School">
+            </div>
+            <div class="field" style="flex:3;min-width:260px;">
+              <label>School Motto</label>
+              <input type="text" id="set-school-motto" placeholder="e.g. Excellence Through Integrity">
+            </div>
+          </div>
+          <div class="field" style="max-width:480px;">
+            <label>Election Title</label>
+            <input type="text" id="set-election-title" placeholder="e.g. Student Council Elections 2025">
+          </div>
+          <button class="btn-add" onclick="saveSchoolSettings()">💾 Save School Settings</button>
+        </div>
+
+        <!-- Admin Account -->
+        <div class="settings-group">
+          <h3>🔐 Admin Account</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1.25rem;">Update your display name, username, or password. Current password is always required.</p>
+          <div class="form-row">
+            <div class="field" style="flex:1;min-width:180px;">
+              <label>Display Name</label>
+              <input type="text" id="acc-name" placeholder="e.g. Mr. Kariuki">
+            </div>
+            <div class="field" style="flex:1;min-width:180px;">
+              <label>Username</label>
+              <input type="text" id="acc-username" placeholder="e.g. admin">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="field" style="flex:1;min-width:180px;">
+              <label>New Password <span style="color:var(--muted);font-weight:400;">(leave blank to keep)</span></label>
+              <input type="password" id="acc-new-pw" placeholder="New password">
+            </div>
+            <div class="field" style="flex:1;min-width:180px;">
+              <label>Confirm New Password</label>
+              <input type="password" id="acc-confirm-pw" placeholder="Repeat new password">
+            </div>
+          </div>
+          <div class="field" style="max-width:300px;">
+            <label>Current Password <span style="color:var(--red);">*</span></label>
+            <input type="password" id="acc-current-pw" placeholder="Required to save changes">
+          </div>
+          <button class="btn-add" onclick="saveAdminAccount()">💾 Save Account Changes</button>
+        </div>
+
+        <!-- Reset Election -->
+        <div class="settings-group" style="border:2px solid rgba(192,57,43,.25);">
+          <h3 style="color:var(--red);">⚠️ Reset Election</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">
+            Clears <strong>all votes and all positions</strong> so you can set up a fresh election from scratch. 
+            Students and admin accounts are kept. This cannot be undone.
+          </p>
+          <button class="btn-export" style="background:var(--red);" onclick="resetElection()">🗑️ Reset Election Data</button>
+        </div>
+
+        <!-- Export -->
+        <div class="settings-group">
+          <h3>Export Results</h3>
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:1rem;">Download a full results report including vote counts and turnout.</p>
+          <div style="display:flex;gap:.75rem;flex-wrap:wrap;">
+            <button class="btn-export" onclick="exportResultsExcel()">📊 Download as Excel</button>
+            <button class="btn-export" onclick="exportResultsPDF()">📄 Download as PDF</button>
+            <button class="btn-export" onclick="exportResults()" style="background:var(--muted);">📝 Download as Text</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL ═════════════════════════════════ -->
+<div class="modal-overlay" id="confirm-modal" onclick="modalBackdropClick(event)">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">⚠️</div>
+    <div class="modal-title" id="modal-title">Are you sure?</div>
+    <div class="modal-message" id="modal-message"></div>
+    <div class="modal-actions">
+      <button class="modal-btn cancel" onclick="modalResolve(false)">Cancel</button>
+      <button class="modal-btn" id="modal-confirm-btn" onclick="modalResolve(true)">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════ -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────
+let state = {
+  token: null,
+  role: null,
+  studentName: null,
+  studentClass: null,
+  positions: [],
+  votedPositions: [],
+  selectedCandidates: {}, // positionId -> candidateId
+  settings: {}
+};
+let csvParsed = [];
+let excelParsed = [];
+let candidatesCsvParsed = [];
+let candidatesExcelParsed = [];
+let allStudents = [];
+
+// ── CONFIRM MODAL ──────────────────────────────────────
+let _modalResolve = null;
+
+function showConfirm({ title, message, confirmText = 'Confirm', type = 'danger', icon = '⚠️' }) {
+  return new Promise(resolve => {
+    _modalResolve = resolve;
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    document.getElementById('modal-icon').textContent = icon;
+    document.getElementById('modal-icon').className = `modal-icon ${type === 'danger' ? 'danger' : type === 'warning' ? 'warning' : 'info'}`;
+    const btn = document.getElementById('modal-confirm-btn');
+    btn.textContent = confirmText;
+    btn.className = `modal-btn confirm-${type === 'danger' ? 'danger' : type === 'warning' ? 'warning' : 'primary'}`;
+    document.getElementById('confirm-modal').classList.add('show');
+  });
+}
+
+function modalResolve(result) {
+  document.getElementById('confirm-modal').classList.remove('show');
+  if (_modalResolve) { _modalResolve(result); _modalResolve = null; }
+}
+
+function modalBackdropClick(e) {
+  if (e.target === document.getElementById('confirm-modal')) modalResolve(false);
+}
+
+// Close on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('confirm-modal').classList.contains('show')) {
+    modalResolve(false);
+  }
+});
+
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function toast(message, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = message;
+  t.className = `toast show ${type}`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function api(method, path, body = null) {
+  const opts = {
+    method,
+    headers: { 'Content-Type': 'application/json' }
+  };
+  if (state.token) opts.headers['X-Token'] = state.token;
+  if (body) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ── LANDING & LOGIN ────────────────────────────────────
+function showLogin(role) {
+  showScreen('screen-login');
+  if (role === 'student') {
+    document.getElementById('login-title').textContent = 'Student Login';
+    document.getElementById('login-subtitle').textContent = 'Enter your credentials to vote';
+    document.getElementById('field-admission').style.display = 'block';
+    document.getElementById('field-username').style.display = 'none';
+    document.getElementById('login-admission').required = true;
+    document.getElementById('login-username').required = false;
+    document.getElementById('login-btn').dataset.role = 'student';
+  } else {
+    document.getElementById('login-title').textContent = 'Admin Login';
+    document.getElementById('login-subtitle').textContent = 'Access the admin dashboard';
+    document.getElementById('field-admission').style.display = 'none';
+    document.getElementById('field-username').style.display = 'block';
+    document.getElementById('login-admission').required = false;
+    document.getElementById('login-username').required = true;
+    document.getElementById('login-btn').dataset.role = 'admin';
+  }
+}
+
+function backToLanding() {
+  showScreen('screen-landing');
+  document.getElementById('login-form').reset();
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  const role = document.getElementById('login-btn').dataset.role;
+  try {
+    if (role === 'student') {
+      const admission = document.getElementById('login-admission').value.trim();
+      const password  = document.getElementById('login-password').value;
+      const res = await api('POST', '/api/login/student', { admission, password });
+      // Check if student is active (server may return active: false for deactivated)
+      if (res.active === false) {
+        toast('Your account has been deactivated. Please contact the administrator.', 'error');
+        return;
+      }
+      state.token = res.token;
+      state.role = 'student';
+      state.studentName = res.name;
+      state.studentClass = res.class;
+      await loadVotingData();
+      showScreen('screen-vote');
+    } else {
+      const username = document.getElementById('login-username').value.trim();
+      const password = document.getElementById('login-password').value;
+      const res = await api('POST', '/api/login/admin', { username, password });
+      state.token = res.token;
+      state.role = 'admin';
+      state.adminUsername = document.getElementById('login-username').value.trim();
+      document.getElementById('admin-name').textContent = res.name;
+      showScreen('screen-admin');
+      loadResults();
+      startPolling('results');
+    }
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+function logout() {
+  stopPolling();
+  api('POST', '/api/logout').catch(() => {});
+  state = { token: null, role: null, studentName: null, studentClass: null, positions: [], votedPositions: [], selectedCandidates: {}, settings: {}, adminUsername: null };
+  showScreen('screen-landing');
+  document.getElementById('login-form').reset();
+}
+
+// ── STUDENT VOTING ─────────────────────────────────────
+async function loadVotingData() {
+  try {
+    state.positions = await api('GET', '/api/positions');
+    const votedData = await api('GET', '/api/my-votes');
+    state.votedPositions = votedData.voted;
+    document.getElementById('vote-user-name').textContent = state.studentName;
+    document.getElementById('vote-user-class').textContent = state.studentClass;
+    renderPositions();
+    updateProgress();
+  } catch (e) {
+    toast('Failed to load voting data: ' + e.message, 'error');
+  }
+}
+
+function renderPositions() {
+  const container = document.getElementById('positions-container');
+  container.innerHTML = state.positions.map(pos => {
+    const hasVoted = state.votedPositions.includes(pos.id);
+    return `
+      <div class="position-card">
+        <div class="position-header">
+          <h3 class="position-title">${pos.name}</h3>
+          <span class="vote-status ${hasVoted ? 'voted' : 'pending'}">${hasVoted ? '✓ Voted' : 'Pending'}</span>
+        </div>
+        <div class="candidates-list">
+          ${pos.candidates.map(c => {
+            const isSelected = state.selectedCandidates[pos.id] === c.id;
+            return `
+              <div class="candidate-item ${isSelected ? 'selected' : ''}" 
+                   onclick="${hasVoted ? '' : `selectCandidate('${pos.id}', '${c.id}')`}">
+                <div class="candidate-info">
+                  <div class="candidate-name">${c.name}</div>
+                  <div class="candidate-class">${c.class}</div>
+                </div>
+                <div class="radio-circle"></div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${!hasVoted ? `
+          <div class="vote-actions">
+            <button class="btn-vote" 
+                    ${state.selectedCandidates[pos.id] ? '' : 'disabled'}
+                    onclick="confirmVote('${pos.id}')">Confirm Vote</button>
+            ${state.selectedCandidates[pos.id] ? `<button class="btn-vote-clear" onclick="clearSelection('${pos.id}')">Clear</button>` : ''}
+          </div>
+        ` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+function selectCandidate(posId, candId) {
+  state.selectedCandidates[posId] = candId;
+  renderPositions();
+}
+
+function clearSelection(posId) {
+  delete state.selectedCandidates[posId];
+  renderPositions();
+}
+
+async function confirmVote(posId) {
+  const candId = state.selectedCandidates[posId];
+  if (!candId) return;
+  const ok = await showConfirm({
+    title: 'Confirm Your Vote',
+    message: 'Once submitted, your vote cannot be changed. Are you sure you want to vote for this candidate?',
+    confirmText: 'Cast Vote',
+    type: 'primary',
+    icon: '🗳️'
+  });
+  if (!ok) return;
+  try {
+    await api('POST', '/api/vote', { position_id: posId, candidate_id: candId });
+    toast('Vote cast successfully! ✓', 'success');
+    state.votedPositions.push(posId);
+    delete state.selectedCandidates[posId];
+    renderPositions();
+    updateProgress();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+function updateProgress() {
+  const total = state.positions.length;
+  const voted = state.votedPositions.length;
+  const pct = total ? (voted / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${voted}/${total}`;
+}
+
+// ── LIVE POLLING ────────────────────────────────────────
+function updateLastRefreshed(elId) {
+  const el = document.getElementById(elId);
+  if (el) {
+    const now = new Date();
+    el.textContent = `Updated ${now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'})}`;
+  }
+}
+
+const POLL_INTERVAL = 3000; // 3 seconds
+let pollTimer = null;
+let activeTab = null;
+
+function startPolling(tab) {
+  stopPolling();
+  activeTab = tab;
+  if (tab === 'results' || tab === 'turnout' || tab === 'students') {
+    pollTimer = setInterval(() => {
+      if (tab === 'results')  loadResults(true);
+      if (tab === 'turnout')  loadTurnout(true);
+      if (tab === 'students') {
+        const q = document.getElementById('student-search') ? document.getElementById('student-search').value.trim() : '';
+        loadStudents(q, true);
+      }
+    }, POLL_INTERVAL);
+    showLiveIndicator(true);
+  } else {
+    showLiveIndicator(false);
+  }
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+function showLiveIndicator(visible) {
+  const el = document.getElementById('live-badge');
+  if (el) el.style.display = visible ? 'flex' : 'none';
+}
+
+// ── ADMIN DASHBOARD ────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  event.target.closest('.nav-item').classList.add('active');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  if (tab === 'results')     loadResults();
+  if (tab === 'turnout')     loadTurnout();
+  if (tab === 'candidates') loadCandidatesMgmt();
+  if (tab === 'students')   loadStudents();
+  if (tab === 'settings')   loadSettings();
+  startPolling(tab);
+}
+
+async function loadResults(silent = false) {
+  try {
+    const results = await api('GET', '/api/admin/results');
+    document.getElementById('results-container').innerHTML = results.map(pos => {
+      const maxVotes = Math.max(...pos.candidates.map(c => c.votes), 1);
+      return `
+        <div class="result-block">
+          <h3 class="result-title">${pos.name}</h3>
+          <div class="result-list">
+            ${pos.candidates.map((c, idx) => {
+              const pct = (c.votes / maxVotes * 100);
+              const isLeading = idx === 0 && c.votes > 0;
+              return `
+                <div class="result-item">
+                  <div class="result-name ${isLeading ? 'leading' : ''}">${c.name} (${c.class})</div>
+                  <div class="result-bar-wrap">
+                    <div class="result-bar ${isLeading ? 'leading' : ''}" style="width:${pct}%">${c.votes}</div>
+                  </div>
+                  <div class="result-count">${c.votes}</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `;
+    }).join('');
+    updateLastRefreshed('results-last-updated');
+  } catch (e) {
+    if (!silent) toast('Failed to load results: ' + e.message, 'error');
+  }
+}
+
+async function loadTurnout(silent = false) {
+  try {
+    const data = await api('GET', '/api/admin/turnout');
+    const pct = data.total ? Math.round(data.voted / data.total * 100) : 0;
+    document.getElementById('turnout-stats').innerHTML = `
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-value">${pct}%</div>
+        <div class="label">Overall Turnout</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">${data.total}</div>
+        <div class="label">Total Students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value">${data.voted}</div>
+        <div class="label">Students Voted</div>
+      </div>
+    `;
+    const byClass = Object.entries(data.by_class).map(([cls, stats]) => {
+      const clsPct = stats.total ? Math.round(stats.voted / stats.total * 100) : 0;
+      return `
+        <div class="turnout-item">
+          <div class="turnout-class">${cls}</div>
+          <div class="turnout-stats">
+            <div class="turnout-pct">${clsPct}%</div>
+            <div class="turnout-detail">${stats.voted}/${stats.total} voted</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('turnout-by-class').innerHTML = byClass || '<div style="padding:1rem;text-align:center;color:var(--muted);">No class data available</div>';
+    updateLastRefreshed('turnout-last-updated');
+  } catch (e) {
+    if (!silent) toast('Failed to load turnout: ' + e.message, 'error');
+  }
+}
+
+async function loadCandidatesMgmt() {
+  try {
+    const positions = await api('GET', '/api/positions');
+    // Render positions list in the management header
+    const posListEl = document.getElementById('positions-list');
+    if (posListEl) {
+      if (positions.length === 0) {
+        posListEl.innerHTML = '<li style="color:var(--muted);font-style:italic;justify-content:center;">No positions yet — add one above</li>';
+      } else {
+        posListEl.innerHTML = positions.map(pos => `
+          <li>
+            <span style="font-weight:600;">${pos.name}
+              <span style="color:var(--muted);font-weight:400;font-size:.82rem;margin-left:.5rem;">${pos.candidates.length} candidate${pos.candidates.length !== 1 ? 's' : ''}</span>
+            </span>
+            <button class="del-btn" onclick="deletePosition('${pos.id}', '${pos.name.replace(/'/g,"\\'")}')">Delete Position</button>
+          </li>
+        `).join('');
+      }
+    }
+    // Render per-position candidate blocks
+    document.getElementById('candidates-mgmt').innerHTML = positions.map(pos => `
+      <div class="mgmt-position-block" id="mgmt-${pos.id}">
+        <h3>${pos.name}</h3>
+        <ul class="candidate-list">
+          ${pos.candidates.map(c => `
+            <li>
+              <span>${c.name} <span style="color:var(--muted);font-size:.82rem;">(${c.class})</span></span>
+              <button class="del-btn" onclick="deleteCandidate('${c.id}')">Remove</button>
+            </li>
+          `).join('')}
+        </ul>
+        <div class="add-candidate-form">
+          <input type="text" placeholder="Candidate name" id="cname-${pos.id}">
+          <input type="text" placeholder="Class" id="cclass-${pos.id}">
+          <button class="btn-add" onclick="addCandidate('${pos.id}')">+ Add</button>
+        </div>
+      </div>
+    `).join('') || '<div style="padding:1rem;text-align:center;color:var(--muted);">No positions yet. Add a position above to get started.</div>';
+  } catch (e) {
+    toast('Failed to load candidates: ' + e.message, 'error');
+  }
+}
+
+async function addPosition() {
+  const nameEl = document.getElementById('new-position-name');
+  const name = nameEl.value.trim();
+  if (!name) { toast('Enter a position name', 'error'); return; }
+  try {
+    await api('POST', '/api/admin/positions', { name });
+    toast(`Position "${name}" added ✓`, 'success');
+    nameEl.value = '';
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deletePosition(posId, posName) {
+  const ok = await showConfirm({
+    title: `Delete "${posName}"?`,
+    message: `This will permanently remove the position, all its candidates, and any votes cast for it. This cannot be undone.`,
+    confirmText: 'Delete Position',
+    type: 'danger',
+    icon: '🗑️'
+  });
+  if (!ok) return;
+  try {
+    await api('DELETE', `/api/admin/positions/${posId}`);
+    toast(`Position "${posName}" deleted`, 'success');
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function resetElection() {
+  const ok = await showConfirm({
+    title: 'Reset Election Data?',
+    message: 'This will permanently delete ALL positions, candidates, and votes. Students and admin accounts will be kept. This cannot be undone.',
+    confirmText: 'Yes, Reset Everything',
+    type: 'danger',
+    icon: '⚠️'
+  });
+  if (!ok) return;
+  try {
+    await api('POST', '/api/admin/reset-election');
+    toast('Election reset. All votes and positions cleared. ✓', 'success');
+    loadSettings();
+    loadResults();
+  } catch (e) {
+    toast('Reset failed: ' + e.message, 'error');
+  }
+}
+
+async function addCandidate(posId) {
+  const name  = document.getElementById(`cname-${posId}`).value.trim();
+  const cls   = document.getElementById(`cclass-${posId}`).value.trim();
+  if (!name) { toast('Enter a candidate name', 'error'); return; }
+  try {
+    await api('POST', '/api/admin/candidates', { position_id: posId, name, class: cls });
+    toast('Candidate added ✓', 'success');
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteCandidate(candId) {
+  const ok = await showConfirm({
+    title: 'Remove Candidate?',
+    message: 'This candidate will be removed from the position. Any votes already cast for them will also be deleted.',
+    confirmText: 'Remove',
+    type: 'danger',
+    icon: '🗑️'
+  });
+  if (!ok) return;
+  try {
+    await api('DELETE', `/api/admin/candidates/${candId}`);
+    toast('Candidate removed', 'success');
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function loadSettings() {
+  try {
+    const settings = await api('GET', '/api/admin/settings');
+    const toggle = document.getElementById('voting-toggle');
+    toggle.className = 'toggle' + (settings.voting_open ? ' on' : '');
+    // School identity
+    document.getElementById('set-school-name').value  = settings.school_name  || '';
+    document.getElementById('set-school-motto').value = settings.school_motto || '';
+    document.getElementById('set-election-title').value = settings.election_title || '';
+    // Admin account — pre-fill name & username from current session info
+    document.getElementById('acc-name').value     = document.getElementById('admin-name').textContent || '';
+    document.getElementById('acc-username').value = state.adminUsername || '';
+    document.getElementById('acc-new-pw').value = '';
+    document.getElementById('acc-confirm-pw').value = '';
+    document.getElementById('acc-current-pw').value = '';
+  } catch (e) {
+    toast('Failed to load settings', 'error');
+  }
+}
+
+async function saveSchoolSettings() {
+  const school_name    = document.getElementById('set-school-name').value.trim();
+  const school_motto   = document.getElementById('set-school-motto').value.trim();
+  const election_title = document.getElementById('set-election-title').value.trim();
+  try {
+    await api('POST', '/api/admin/settings', { school_name, school_motto, election_title });
+    toast('School settings saved ✓', 'success');
+  } catch (e) {
+    toast('Failed to save: ' + e.message, 'error');
+  }
+}
+
+async function saveAdminAccount() {
+  const name            = document.getElementById('acc-name').value.trim();
+  const username        = document.getElementById('acc-username').value.trim();
+  const new_password    = document.getElementById('acc-new-pw').value;
+  const confirm_password = document.getElementById('acc-confirm-pw').value;
+  const current_password = document.getElementById('acc-current-pw').value;
+  if (!current_password) {
+    toast('Current password is required', 'error'); return;
+  }
+  if (new_password && new_password !== confirm_password) {
+    toast('New passwords do not match', 'error'); return;
+  }
+  if (!name || !username) {
+    toast('Name and username cannot be empty', 'error'); return;
+  }
+  try {
+    const res = await api('POST', '/api/admin/account', {
+      name, username, new_password, current_password
+    });
+    document.getElementById('admin-name').textContent = res.name;
+    state.adminUsername = res.username;
+    document.getElementById('acc-current-pw').value = '';
+    document.getElementById('acc-new-pw').value = '';
+    document.getElementById('acc-confirm-pw').value = '';
+    toast('Account updated ✓', 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function toggleVoting() {
+  try {
+    const settings = await api('GET', '/api/admin/settings');
+    settings.voting_open = !settings.voting_open;
+    await api('POST', '/api/admin/settings', settings);
+    const toggle = document.getElementById('voting-toggle');
+    toggle.className = 'toggle' + (settings.voting_open ? ' on' : '');
+    toast(`Voting ${settings.voting_open ? 'opened' : 'closed'}`, 'success');
+  } catch (e) {
+    toast('Failed to toggle voting', 'error');
+  }
+}
+
+async function exportResults() {
+  try {
+    const res = await fetch('/api/admin/export', {
+      headers: { 'X-Token': state.token }
+    });
+    const text = await res.text();
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'results.txt';
+    a.click();
+    toast('Results exported ✓', 'success');
+  } catch (e) {
+    toast('Export failed', 'error');
+  }
+}
+
+async function exportResultsExcel() {
+  try {
+    // Fetch results and turnout data
+    const results = await api('GET', '/api/admin/results');
+    const turnout = await api('GET', '/api/admin/turnout');
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    
+    // Sheet 1: Results Summary
+    const summaryData = [
+      ['ELECTION RESULTS SUMMARY'],
+      ['Generated:', new Date().toLocaleString()],
+      [],
+      ['Overall Turnout:', `${turnout.voted}/${turnout.total}`, `${Math.round(turnout.voted/turnout.total*100)}%`],
+      [],
+      ['POSITION', 'CANDIDATE', 'CLASS', 'VOTES']
+    ];
+    
+    results.forEach(pos => {
+      summaryData.push([pos.name, '', '', '']);
+      pos.candidates.forEach(c => {
+        summaryData.push(['', c.name, c.class, c.votes]);
+      });
+      summaryData.push([]);
+    });
+    
+    const ws1 = XLSX.utils.aoa_to_sheet(summaryData);
+    ws1['!cols'] = [{wch:25}, {wch:30}, {wch:15}, {wch:10}];
+    XLSX.utils.book_append_sheet(wb, ws1, 'Results Summary');
+    
+    // Sheet 2: Turnout by Class
+    const turnoutData = [
+      ['TURNOUT BY CLASS'],
+      [],
+      ['CLASS', 'VOTED', 'TOTAL', 'PERCENTAGE']
+    ];
+    
+    Object.entries(turnout.by_class).forEach(([cls, stats]) => {
+      const pct = stats.total ? Math.round(stats.voted/stats.total*100) : 0;
+      turnoutData.push([cls, stats.voted, stats.total, `${pct}%`]);
+    });
+    
+    const ws2 = XLSX.utils.aoa_to_sheet(turnoutData);
+    ws2['!cols'] = [{wch:20}, {wch:10}, {wch:10}, {wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws2, 'Turnout by Class');
+    
+    // Sheet 3: Detailed Results
+    const detailedData = [
+      ['DETAILED ELECTION RESULTS'],
+      []
+    ];
+    
+    results.forEach(pos => {
+      detailedData.push(['Position:', pos.name]);
+      detailedData.push(['Rank', 'Candidate', 'Class', 'Votes', 'Percentage']);
+      
+      const totalVotes = pos.candidates.reduce((sum, c) => sum + c.votes, 0);
+      pos.candidates.forEach((c, idx) => {
+        const pct = totalVotes ? Math.round(c.votes/totalVotes*100) : 0;
+        detailedData.push([idx + 1, c.name, c.class, c.votes, `${pct}%`]);
+      });
+      detailedData.push([]);
+    });
+    
+    const ws3 = XLSX.utils.aoa_to_sheet(detailedData);
+    ws3['!cols'] = [{wch:8}, {wch:30}, {wch:15}, {wch:10}, {wch:12}];
+    XLSX.utils.book_append_sheet(wb, ws3, 'Detailed Results');
+    
+    // Generate and download
+    const timestamp = new Date().toISOString().slice(0,10);
+    XLSX.writeFile(wb, `election_results_${timestamp}.xlsx`);
+    toast('Excel file downloaded ✓', 'success');
+  } catch (e) {
+    toast('Excel export failed: ' + e.message, 'error');
+  }
+}
+
+async function exportResultsPDF() {
+  try {
+    // Fetch results and turnout data
+    const results = await api('GET', '/api/admin/results');
+    const turnout = await api('GET', '/api/admin/turnout');
+    const settings = await api('GET', '/api/admin/settings');
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    let yPos = 20;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
+    const contentWidth = pageWidth - 2 * margin;
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setFont(undefined, 'bold');
+    doc.text(settings.election_title || 'Election Results', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+    
+    doc.setFontSize(12);
+    doc.setFont(undefined, 'normal');
+    doc.text(settings.school_name || 'SchoolVote', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 6;
+    
+    doc.setFontSize(9);
+    doc.setTextColor(100);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+    
+    // Overall Turnout
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(0);
+    doc.text('Overall Turnout', margin, yPos);
+    yPos += 8;
+    
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'normal');
+    const turnoutPct = turnout.total ? Math.round(turnout.voted/turnout.total*100) : 0;
+    doc.text(`${turnout.voted} out of ${turnout.total} students voted (${turnoutPct}%)`, margin, yPos);
+    yPos += 12;
+    
+    // Results for each position
+    doc.setFontSize(14);
+    doc.setFont(undefined, 'bold');
+    doc.text('Results by Position', margin, yPos);
+    yPos += 10;
+    
+    results.forEach((pos, posIdx) => {
+      // Check if we need a new page
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      // Position name
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(30, 64, 53); // forest color
+      doc.text(pos.name, margin, yPos);
+      yPos += 8;
+      
+      // Candidates
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(0);
+      
+      const totalVotes = pos.candidates.reduce((sum, c) => sum + c.votes, 0);
+      
+      pos.candidates.forEach((c, idx) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        
+        const pct = totalVotes ? Math.round(c.votes/totalVotes*100) : 0;
+        const isLeading = idx === 0 && c.votes > 0;
+        
+        if (isLeading) {
+          doc.setFont(undefined, 'bold');
+          doc.text(`${idx + 1}. ${c.name} (${c.class})`, margin + 5, yPos);
+          doc.setFont(undefined, 'normal');
+        } else {
+          doc.text(`${idx + 1}. ${c.name} (${c.class})`, margin + 5, yPos);
+        }
+        
+        doc.text(`${c.votes} votes (${pct}%)`, pageWidth - margin - 40, yPos);
+        
+        // Draw progress bar
+        const barWidth = 50;
+        const barHeight = 4;
+        const barX = pageWidth - margin - 45 - barWidth;
+        const barY = yPos - 3;
+        
+        // Background
+        doc.setFillColor(220, 220, 220);
+        doc.rect(barX, barY, barWidth, barHeight, 'F');
+        
+        // Fill
+        if (totalVotes > 0) {
+          const fillWidth = (c.votes / totalVotes) * barWidth;
+          if (isLeading) {
+            doc.setFillColor(201, 168, 76); // gold
+          } else {
+            doc.setFillColor(30, 64, 53); // forest
+          }
+          doc.rect(barX, barY, fillWidth, barHeight, 'F');
+        }
+        
+        yPos += 7;
+      });
+      
+      yPos += 8;
+    });
+    
+    // Add new page for turnout by class if we have data
+    if (Object.keys(turnout.by_class).length > 0) {
+      doc.addPage();
+      yPos = 20;
+      
+      doc.setFontSize(14);
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(0);
+      doc.text('Turnout by Class', margin, yPos);
+      yPos += 10;
+      
+      doc.setFontSize(10);
+      doc.setFont(undefined, 'normal');
+      
+      Object.entries(turnout.by_class).forEach(([cls, stats]) => {
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 20;
+        }
+        
+        const clsPct = stats.total ? Math.round(stats.voted/stats.total*100) : 0;
+        doc.text(`${cls}:`, margin, yPos);
+        doc.text(`${stats.voted}/${stats.total} (${clsPct}%)`, margin + 60, yPos);
+        yPos += 7;
+      });
+    }
+    
+    // Footer on each page
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(
+        `Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.getHeight() - 10,
+        { align: 'center' }
+      );
+    }
+    
+    // Save
+    const timestamp = new Date().toISOString().slice(0,10);
+    doc.save(`election_results_${timestamp}.pdf`);
+    toast('PDF downloaded ✓', 'success');
+  } catch (e) {
+    console.error(e);
+    toast('PDF export failed: ' + e.message, 'error');
+  }
+}
+
+// ── STUDENTS MANAGEMENT ────────────────────────────────
+async function loadStudents(q = '', silent = false) {
+  try {
+    const students = await api('GET', `/api/admin/students${q ? '?q=' + encodeURIComponent(q) : ''}`);
+    allStudents = students;
+    
+    const voted = students.filter(s => s.has_voted).length;
+    const active = students.filter(s => s.active !== false).length;
+    const inactive = students.length - active;
+    document.getElementById('stat-total-students').textContent = students.length;
+    document.getElementById('stat-voted-students').textContent = voted;
+    
+    // Update or inject active/inactive stat cards
+    let activeCard = document.getElementById('stat-active-card');
+    if (!activeCard) {
+      const grid = document.getElementById('student-stats');
+      const card1 = document.createElement('div');
+      card1.className = 'stat-card';
+      card1.id = 'stat-active-card';
+      card1.innerHTML = `<div class="stat-icon">✅</div><div class="stat-value" id="stat-active-count">0</div><div class="label">Active</div>`;
+      const card2 = document.createElement('div');
+      card2.className = 'stat-card';
+      card2.id = 'stat-inactive-card';
+      card2.innerHTML = `<div class="stat-icon">🚫</div><div class="stat-value" id="stat-inactive-count">0</div><div class="label">Inactive (Absent)</div>`;
+      grid.appendChild(card1);
+      grid.appendChild(card2);
+    }
+    document.getElementById('stat-active-count').textContent = active;
+    document.getElementById('stat-inactive-count').textContent = inactive;
+    
+    renderStudentsTable(students);
+    updateLastRefreshed('students-last-updated');
+  } catch (e) {
+    if (!silent) toast('Failed to load students: ' + e.message, 'error');
+  }
+}
+
+function renderStudentsTable(students) {
+  const wrap = document.getElementById('students-table-wrap');
+  if (!students.length) {
+    wrap.innerHTML = '<div style="padding:2rem;text-align:center;color:var(--muted);">No students found</div>';
+    return;
+  }
+  wrap.innerHTML = `
+    <table class="students-table">
+      <thead>
+        <tr>
+          <th>Admission</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Vote Status</th>
+          <th>Active</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${students.map(s => {
+          const isActive = s.active !== false; // default true if field absent
+          return `
+          <tr style="${isActive ? '' : 'opacity:.6;'}">
+            <td>${s.admission}</td>
+            <td>${s.name}</td>
+            <td>${s.class}</td>
+            <td><span class="badge ${s.has_voted ? 'voted' : 'pending'}">${s.has_voted ? 'Voted' : 'Not Voted'}</span></td>
+            <td><span class="badge ${isActive ? 'active-status' : 'inactive-status'}">${isActive ? 'Active' : 'Inactive'}</span></td>
+            <td>
+              <div class="action-btns">
+                <button class="btn-sm btn-reset" onclick="resetPassword('${s.admission}')">Reset PW</button>
+                <button class="btn-sm ${isActive ? 'btn-deactivate' : 'btn-activate'}" onclick="toggleStudentActive('${s.admission}', ${isActive})">${isActive ? 'Deactivate' : 'Activate'}</button>
+                <button class="btn-sm btn-delete" onclick="deleteStudent('${s.admission}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+          `;
+        }).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function searchStudents() {
+  const q = document.getElementById('student-search').value.trim();
+  loadStudents(q);
+}
+
+function toggleAddStudentForm() {
+  document.getElementById('student-add-form').classList.toggle('show');
+}
+
+function hideAddStudentForm() {
+  document.getElementById('student-add-form').classList.remove('show');
+  document.getElementById('ns-admission').value = '';
+  document.getElementById('ns-name').value = '';
+  document.getElementById('ns-class').value = '';
+  document.getElementById('ns-pw').value = '';
+}
+
+async function addStudent() {
+  const admission = document.getElementById('ns-admission').value.trim();
+  const name = document.getElementById('ns-name').value.trim();
+  const cls = document.getElementById('ns-class').value.trim();
+  const pw = document.getElementById('ns-pw').value.trim() || '1234';
+  if (!admission || !name || !cls) {
+    toast('Fill all required fields', 'error');
+    return;
+  }
+  try {
+    await api('POST', '/api/admin/students', { admission, name, class: cls, password: pw });
+    toast('Student added ✓', 'success');
+    hideAddStudentForm();
+    loadStudents();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function resetPassword(adm) {
+  const newPw = prompt('Enter new password (leave blank for "1234"):') || '1234';
+  try {
+    await api('POST', `/api/admin/students/${adm}/reset-password`, { password: newPw });
+    toast('Password reset ✓', 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteStudent(adm) {
+  const ok = await showConfirm({
+    title: 'Delete Student?',
+    message: `Student ${adm} will be permanently removed from the registry. Their votes will also be deleted.`,
+    confirmText: 'Delete Student',
+    type: 'danger',
+    icon: '👤'
+  });
+  if (!ok) return;
+  try {
+    await api('DELETE', `/api/admin/students/${adm}`);
+    toast('Student deleted', 'success');
+    loadStudents();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function toggleStudentActive(adm, currentlyActive) {
+  const action = currentlyActive ? 'deactivate' : 'activate';
+  const ok = await showConfirm({
+    title: `${currentlyActive ? 'Deactivate' : 'Activate'} Student?`,
+    message: currentlyActive
+      ? `Student ${adm} will be marked as inactive and will not be able to log in or vote.`
+      : `Student ${adm} will be reactivated and allowed to log in and vote.`,
+    confirmText: currentlyActive ? 'Deactivate' : 'Activate',
+    type: currentlyActive ? 'warning' : 'primary',
+    icon: currentlyActive ? '🚫' : '✅'
+  });
+  if (!ok) return;
+  try {
+    await api('POST', `/api/admin/students/${adm}/set-active`, { active: !currentlyActive });
+    toast(`Student ${currentlyActive ? 'deactivated' : 'activated'} ✓`, 'success');
+    // Update in-memory list immediately so the next poll render is correct
+    const idx = allStudents.findIndex(s => s.admission === adm);
+    if (idx !== -1) allStudents[idx].active = !currentlyActive;
+    loadStudents();
+  } catch (e) {
+    toast('Failed to update student status: ' + e.message, 'error');
+  }
+}
+
+// ── EXCEL IMPORT (STUDENTS) ────────────────────────────
+function handleExcelDrop(e) {
+  e.preventDefault();
+  document.getElementById('excel-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+    handleExcelFile(file);
+  } else {
+    toast('Please drop an Excel file (.xlsx or .xls)', 'error');
+  }
+}
+
+function handleExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseExcel(e.target.result);
+  reader.readAsArrayBuffer(file);
+}
+
+function parseExcel(data) {
+  try {
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
+    
+    if (!jsonData || jsonData.length === 0) {
+      toast('Excel file is empty', 'error');
+      return;
+    }
+    
+    // Parse the data
+    excelParsed = [];
+    for (const row of jsonData) {
+      // Try different possible column names (case-insensitive)
+      const admission = row['admission'] || row['Admission'] || row['ADMISSION'] || 
+                       row['adm'] || row['Adm'] || row['ADM'] || '';
+      const name = row['name'] || row['Name'] || row['NAME'] || 
+                   row['student'] || row['Student'] || '';
+      const cls = row['class'] || row['Class'] || row['CLASS'] || 
+                 row['form'] || row['Form'] || '';
+      const password = row['password'] || row['Password'] || row['PASSWORD'] || '1234';
+      
+      if (admission && name) {
+        excelParsed.push({
+          admission: String(admission).trim(),
+          name: String(name).trim(),
+          class: String(cls).trim(),
+          password: String(password).trim()
+        });
+      }
+    }
+    
+    if (!excelParsed.length) {
+      toast('No valid rows found. Required columns: admission, name', 'error');
+      return;
+    }
+    
+    // Show preview
+    const preview = document.getElementById('excel-preview');
+    document.getElementById('excel-preview-info').textContent = 
+      `${excelParsed.length} student(s) ready to import (first 5 shown):`;
+    const sample = excelParsed.slice(0, 5);
+    document.getElementById('excel-preview-table').innerHTML = `
+      <table class="excel-preview-tbl">
+        <thead><tr><th>Admission</th><th>Name</th><th>Class</th><th>Password</th></tr></thead>
+        <tbody>
+          ${sample.map(r => `<tr><td>${r.admission}</td><td>${r.name}</td><td>${r.class}</td><td>${r.password}</td></tr>`).join('')}
+          ${excelParsed.length > 5 ? `<tr><td colspan="4" style="color:var(--muted);font-style:italic;">…and ${excelParsed.length - 5} more</td></tr>` : ''}
+        </tbody>
+      </table>
+    `;
+    preview.style.display = 'block';
+  } catch (error) {
+    toast('Failed to parse Excel file: ' + error.message, 'error');
+  }
+}
+
+function clearExcelPreview() {
+  excelParsed = [];
+  document.getElementById('excel-preview').style.display = 'none';
+  document.getElementById('excel-file-input').value = '';
+}
+
+async function importExcelStudents() {
+  if (!excelParsed.length) return;
+  try {
+    const result = await api('POST', '/api/admin/students', excelParsed);
+    toast(`Imported ${result.added} student(s). ${result.skipped} skipped (duplicates). ✓`, 'success');
+    clearExcelPreview();
+    loadStudents();
+  } catch (e) {
+    toast('Import failed: ' + e.message, 'error');
+  }
+}
+
+// ── CSV IMPORT (STUDENTS) ──────────────────────────────
+function handleCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('csv-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) handleCsvFile(file);
+  else toast('Please drop a .csv file', 'error');
+}
+
+function handleCsvFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseCsv(e.target.result);
+  reader.readAsText(file);
+}
+
+function parseCsv(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { toast('CSV is empty or has no data rows', 'error'); return; }
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+  const admIdx  = headers.indexOf('admission');
+  const nameIdx = headers.indexOf('name');
+  const clsIdx  = headers.indexOf('class');
+  const pwIdx   = headers.indexOf('password');
+  if (admIdx === -1 || nameIdx === -1) {
+    toast('CSV must have "admission" and "name" columns', 'error'); return;
+  }
+  csvParsed = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+    if (!cols[admIdx] && !cols[nameIdx]) continue;
+    csvParsed.push({
+      admission: cols[admIdx] || '',
+      name: cols[nameIdx] || '',
+      class: clsIdx >= 0 ? (cols[clsIdx] || '') : '',
+      password: pwIdx >= 0 ? (cols[pwIdx] || '1234') : '1234'
+    });
+  }
+  if (!csvParsed.length) { toast('No valid rows found in CSV', 'error'); return; }
+
+  // Show preview
+  const preview = document.getElementById('csv-preview');
+  document.getElementById('csv-preview-info').textContent = `${csvParsed.length} student(s) ready to import (first 5 shown):`;
+  const sample = csvParsed.slice(0, 5);
+  document.getElementById('csv-preview-table').innerHTML = `
+    <table class="csv-preview-tbl">
+      <thead><tr><th>Admission</th><th>Name</th><th>Class</th><th>Password</th></tr></thead>
+      <tbody>
+        ${sample.map(r => `<tr><td>${r.admission}</td><td>${r.name}</td><td>${r.class}</td><td>${r.password}</td></tr>`).join('')}
+        ${csvParsed.length > 5 ? `<tr><td colspan="4" style="color:var(--muted);font-style:italic;">…and ${csvParsed.length - 5} more</td></tr>` : ''}
+      </tbody>
+    </table>
+  `;
+  preview.style.display = 'block';
+}
+
+function clearCsvPreview() {
+  csvParsed = [];
+  document.getElementById('csv-preview').style.display = 'none';
+  document.getElementById('csv-file-input').value = '';
+}
+
+async function importCsvStudents() {
+  if (!csvParsed.length) return;
+  try {
+    const result = await api('POST', '/api/admin/students', csvParsed);
+    toast(`Imported ${result.added} student(s). ${result.skipped} skipped (duplicates). ✓`, 'success');
+    clearCsvPreview();
+    loadStudents();
+  } catch (e) {
+    toast('Import failed: ' + e.message, 'error');
+  }
+}
+
+// ── EXCEL IMPORT (CANDIDATES) ──────────────────────────
+function handleCandidatesExcelDrop(e) {
+  e.preventDefault();
+  document.getElementById('candidates-excel-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) {
+    handleCandidatesExcelFile(file);
+  } else {
+    toast('Please drop an Excel file (.xlsx or .xls)', 'error');
+  }
+}
+
+function handleCandidatesExcelFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseCandidatesExcel(e.target.result);
+  reader.readAsArrayBuffer(file);
+}
+
+async function parseCandidatesExcel(data) {
+  try {
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
+    
+    if (!jsonData || jsonData.length === 0) {
+      toast('Excel file is empty', 'error');
+      return;
+    }
+    
+    // Get current positions to match against
+    const positions = await api('GET', '/api/positions');
+    const positionMap = {};
+    positions.forEach(p => {
+      positionMap[p.name.toLowerCase()] = p.id;
+    });
+    
+    // Parse the data
+    candidatesExcelParsed = [];
+    for (const row of jsonData) {
+      const position = row['position'] || row['Position'] || row['POSITION'] || '';
+      const name = row['name'] || row['Name'] || row['NAME'] || 
+                   row['candidate'] || row['Candidate'] || '';
+      const cls = row['class'] || row['Class'] || row['CLASS'] || 
+                 row['form'] || row['Form'] || '';
+      
+      if (position && name) {
+        const posId = positionMap[position.toLowerCase()];
+        if (posId) {
+          candidatesExcelParsed.push({
+            position_id: posId,
+            position_name: position,
+            name: String(name).trim(),
+            class: String(cls).trim()
+          });
+        }
+      }
+    }
+    
+    if (!candidatesExcelParsed.length) {
+      toast('No valid rows found. Required columns: position, name', 'error');
+      return;
+    }
+    
+    // Show preview
+    const preview = document.getElementById('candidates-excel-preview');
+    document.getElementById('candidates-excel-preview-info').textContent = 
+      `${candidatesExcelParsed.length} candidate(s) ready to import (first 5 shown):`;
+    const sample = candidatesExcelParsed.slice(0, 5);
+    document.getElementById('candidates-excel-preview-table').innerHTML = `
+      <table class="excel-preview-tbl">
+        <thead><tr><th>Position</th><th>Name</th><th>Class</th></tr></thead>
+        <tbody>
+          ${sample.map(r => `<tr><td>${r.position_name}</td><td>${r.name}</td><td>${r.class}</td></tr>`).join('')}
+          ${candidatesExcelParsed.length > 5 ? `<tr><td colspan="3" style="color:var(--muted);font-style:italic;">…and ${candidatesExcelParsed.length - 5} more</td></tr>` : ''}
+        </tbody>
+      </table>
+    `;
+    preview.style.display = 'block';
+  } catch (error) {
+    toast('Failed to parse Excel file: ' + error.message, 'error');
+  }
+}
+
+function clearCandidatesExcelPreview() {
+  candidatesExcelParsed = [];
+  document.getElementById('candidates-excel-preview').style.display = 'none';
+  document.getElementById('candidates-excel-input').value = '';
+}
+
+async function importExcelCandidates() {
+  if (!candidatesExcelParsed.length) return;
+  try {
+    let added = 0;
+    for (const candidate of candidatesExcelParsed) {
+      await api('POST', '/api/admin/candidates', {
+        position_id: candidate.position_id,
+        name: candidate.name,
+        class: candidate.class
+      });
+      added++;
+    }
+    toast(`Imported ${added} candidate(s) ✓`, 'success');
+    clearCandidatesExcelPreview();
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast('Import failed: ' + e.message, 'error');
+  }
+}
+
+// ── CSV IMPORT (CANDIDATES) ────────────────────────────
+function handleCandidatesCsvDrop(e) {
+  e.preventDefault();
+  document.getElementById('candidates-csv-drop-zone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.name.endsWith('.csv')) handleCandidatesCsvFile(file);
+  else toast('Please drop a .csv file', 'error');
+}
+
+function handleCandidatesCsvFile(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => parseCandidatesCsv(e.target.result);
+  reader.readAsText(file);
+}
+
+async function parseCandidatesCsv(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) { toast('CSV is empty or has no data rows', 'error'); return; }
+  const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+  const posIdx  = headers.indexOf('position');
+  const nameIdx = headers.indexOf('name');
+  const clsIdx  = headers.indexOf('class');
+  
+  if (posIdx === -1 || nameIdx === -1) {
+    toast('CSV must have "position" and "name" columns', 'error');
+    return;
+  }
+  
+  // Get current positions to match against
+  const positions = await api('GET', '/api/positions');
+  const positionMap = {};
+  positions.forEach(p => {
+    positionMap[p.name.toLowerCase()] = p.id;
+  });
+  
+  candidatesCsvParsed = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split(',').map(c => c.trim().replace(/^"|"$/g, ''));
+    const position = cols[posIdx] || '';
+    const name = cols[nameIdx] || '';
+    
+    if (position && name) {
+      const posId = positionMap[position.toLowerCase()];
+      if (posId) {
+        candidatesCsvParsed.push({
+          position_id: posId,
+          position_name: position,
+          name: name,
+          class: clsIdx >= 0 ? (cols[clsIdx] || '') : ''
+        });
+      }
+    }
+  }
+  
+  if (!candidatesCsvParsed.length) {
+    toast('No valid rows found in CSV', 'error');
+    return;
+  }
+
+  // Show preview
+  const preview = document.getElementById('candidates-csv-preview');
+  document.getElementById('candidates-csv-preview-info').textContent = 
+    `${candidatesCsvParsed.length} candidate(s) ready to import (first 5 shown):`;
+  const sample = candidatesCsvParsed.slice(0, 5);
+  document.getElementById('candidates-csv-preview-table').innerHTML = `
+    <table class="csv-preview-tbl">
+      <thead><tr><th>Position</th><th>Name</th><th>Class</th></tr></thead>
+      <tbody>
+        ${sample.map(r => `<tr><td>${r.position_name}</td><td>${r.name}</td><td>${r.class}</td></tr>`).join('')}
+        ${candidatesCsvParsed.length > 5 ? `<tr><td colspan="3" style="color:var(--muted);font-style:italic;">…and ${candidatesCsvParsed.length - 5} more</td></tr>` : ''}
+      </tbody>
+    </table>
+  `;
+  preview.style.display = 'block';
+}
+
+function clearCandidatesCsvPreview() {
+  candidatesCsvParsed = [];
+  document.getElementById('candidates-csv-preview').style.display = 'none';
+  document.getElementById('candidates-csv-input').value = '';
+}
+
+async function importCsvCandidates() {
+  if (!candidatesCsvParsed.length) return;
+  try {
+    let added = 0;
+    for (const candidate of candidatesCsvParsed) {
+      await api('POST', '/api/admin/candidates', {
+        position_id: candidate.position_id,
+        name: candidate.name,
+        class: candidate.class
+      });
+      added++;
+    }
+    toast(`Imported ${added} candidate(s) ✓`, 'success');
+    clearCandidatesCsvPreview();
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast('Import failed: ' + e.message, 'error');
+  }
+}
+
+// ── IMPORT TAB SWITCHING ───────────────────────────────
+function switchImportTab(section, type) {
+  // Update tab buttons
+  const tabs = document.querySelectorAll(`#tab-${section} .import-tab`);
+  tabs.forEach(tab => tab.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  // Update content
+  const contents = document.querySelectorAll(`#tab-${section} .import-content`);
+  contents.forEach(content => content.classList.remove('active'));
+  document.getElementById(`${section}-${type}-import`).classList.add('active');
+}
+
+// ── BULK DELETE FUNCTIONS ──────────────────────────────
+function confirmBulkDeleteStudents() {
+  const confirmed = confirm(
+    '⚠️ WARNING: This will permanently delete ALL students and their votes.\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you absolutely sure you want to continue?'
+  );
+  
+  if (confirmed) {
+    const doubleCheck = confirm(
+      '🚨 FINAL CONFIRMATION\n\n' +
+      'You are about to delete ALL students from the database.\n\n' +
+      'Click OK to proceed with deletion.'
+    );
+    
+    if (doubleCheck) {
+      bulkDeleteStudents();
+    }
+  }
+}
+
+async function bulkDeleteStudents() {
+  try {
+    const result = await api('POST', '/api/admin/students/bulk-delete');
+    toast(`Successfully deleted ${result.deleted} student(s) and all votes ✓`, 'success');
+    loadStudents();
+  } catch (e) {
+    toast('Bulk delete failed: ' + e.message, 'error');
+  }
+}
+
+function confirmBulkDeleteCandidates() {
+  const confirmed = confirm(
+    '⚠️ WARNING: This will permanently delete ALL candidates from ALL positions.\n\n' +
+    'This action CANNOT be undone!\n\n' +
+    'Are you absolutely sure you want to continue?'
+  );
+  
+  if (confirmed) {
+    const doubleCheck = confirm(
+      '🚨 FINAL CONFIRMATION\n\n' +
+      'You are about to delete ALL candidates from the database.\n\n' +
+      'Click OK to proceed with deletion.'
+    );
+    
+    if (doubleCheck) {
+      bulkDeleteCandidates();
+    }
+  }
+}
+
+async function bulkDeleteCandidates() {
+  try {
+    const result = await api('POST', '/api/admin/candidates/bulk-delete');
+    toast(`Successfully deleted ${result.deleted} candidate(s) ✓`, 'success');
+    loadCandidatesMgmt();
+  } catch (e) {
+    toast('Bulk delete failed: ' + e.message, 'error');
+  }
+}
+
+</script>
+</body>
+</html>
